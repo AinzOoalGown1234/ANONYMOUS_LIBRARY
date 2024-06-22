@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <!-- Enlaza el archivo de estilos -->
+    <link rel="stylesheet" href="../styles/stylesSecundario.css">
+    <!-- Otros elementos del encabezado, como enlaces a CSS, metaetiquetas, etc. -->
+</head>
+<body>
+    <!-- Contenedor principal -->
+    <div id="informacionLibro" class="libro-container">
+        <!-- Contenedor de la imagen -->
+        <div class="imagen-container">
+            <img src="" id="imagenLibro">
+        </div>
+        <!-- Contenedor de la información -->
+        <div class="informacion-container">
+            <h2 id="nombreLibro"></h2>
+            <p id="estadoLibro"></p>
+            <p id="tomosLibro"></p>
+            <p id="resumenLibro"></p>
+            <div class="Contenedor Link">
+                <div class="contenido-container" id="contenidoLibro"></div>
+                <div id="pdfButtons" class="pdf-buttons-container"></div>
+            </div>
+        </div>
+    </div>
+    <script type="module">
+        import { librosNovela } from '../Data/dataNovela.js';
+        function buscarLibroPorId(idLibro) {
+            // Utiliza la lista de libros importada
+            return librosNovela.find(libro => libro.id === idLibro);
+        }
+        
+        document.addEventListener('DOMContentLoaded', async function () {
+            // Obtén el ID del libro de la URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const idLibro = urlParams.get('id');
+            const libro = buscarLibroPorId(idLibro);
+            mostrarInformacionLibro(libro);
+            
+        });
+        function mostrarInformacionLibro(libro) {
+            // Puedes personalizar cómo se muestra la información del libro
+            document.getElementById('nombreLibro').textContent = libro.nombre;
+            document.title=libro.nombre
+            let imagenLibro = document.getElementById('imagenLibro');
+            imagenLibro.src = `.${libro.imagen}`;
+            document.getElementById('imagenLibro').alt = libro.nombre;
+            document.getElementById('resumenLibro').textContent = `Resumen: ${libro.resumen}`;
+            mostrarBotonesPDF(libro);
+        }
+        function mostrarBotonesPDF(libro) {
+            const pdfButtonsContainer = document.getElementById('pdfButtons');
+            pdfButtonsContainer.innerHTML = ''; // Limpiamos el contenido existente
+        
+            const tiposContenido = {
+                'ContenidoAnime': 'Anime',
+                'ContenidoManga': 'Manga',
+                'ContenidoNovela': 'Novela',
+                'ContenidoPelicula': 'Película',
+                'ContenidoDoujinshi': 'Doujinshi'
+            };
+        
+            for (const [tipoContenido, nombreCompleto] of Object.entries(tiposContenido)) {
+                const tipoContenidoContainer = document.createElement('div');
+                tipoContenidoContainer.style.marginBottom = '20px';
+        
+                const tipoContenidoHeader = document.createElement('h3');
+                tipoContenidoHeader.textContent = nombreCompleto;
+                tipoContenidoContainer.appendChild(tipoContenidoHeader);
+        
+                for (const [clave, [valor, idArchivo]] of Object.entries(libro[tipoContenido])) {
+                    
+                    //Mostrar nombre en el boton
+                    const boton = document.createElement('button');
+                    boton.textContent = clave.length > 15 ? clave.substring(0, 15) + '...' : clave;
+                    boton.title = clave;
+        
+                    boton.addEventListener('click', function () {
+                        // Aquí se añade la lógica de redireccionamiento
+                        switch (valor) {
+                            case 1: window.location.href = "./genericoVideo.html?idArchivo=" + idArchivo + "&valor=" + valor; break;
+                            case 2: window.location.href = "./genericoLectura.html?idArchivo=" + idArchivo + "&valor=" + valor; break;
+                            case 3: window.location.href = "./genericoLectura.html?idArchivo=" + idArchivo + "&valor=" + valor; break;
+                            case 4: window.location.href = "./genericoVideo.html?idArchivo=" + idArchivo + "&valor=" + valor; break;
+                            case 5: window.location.href = "./genericoLectura.html?idArchivo=" + idArchivo + "&valor=" + valor; break;
+                        }
+                    });
+        
+                    tipoContenidoContainer.appendChild(boton);
+                }
+                pdfButtonsContainer.appendChild(tipoContenidoContainer);
+            }
+            pdfButtonsContainer.style.display = 'flex';
+            pdfButtonsContainer.style.flexDirection = 'column';
+            pdfButtonsContainer.style.gap = '20px';
+        }   
+    </script>
+</body>
+</html>

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="pageTitle"></title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: black;
+        }
+        #video-container {
+            position: relative;
+            width: 80%;
+            height: 80%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #video-viewer {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        #chromecast-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.8);
+            color: #000;
+            border: 2px solid #fff;
+            cursor: pointer;
+            z-index: 1000;
+        }
+        @media only screen and (max-width: 800px) {
+            #chromecast-button {
+                top: auto;
+                bottom: 10px;
+                right: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="video-container">
+        <iframe id="video-viewer" allowfullscreen></iframe>
+    </div>
+    <button id="chromecast-button" onclick="iniciarTransmisionChromecast()">Transmitir</button>
+    <script type="module">
+        import { librosNovela } from '../Data/dataNovela.js';
+
+        let idArchivo = obtenerParametroConsulta('idArchivo');
+        let valor = obtenerParametroConsulta('valor');
+        let libro = librosNovela.find(libro => libro.id === 'Novela1'); // Suponiendo que trabajas con el primer libro para este ejemplo
+        let contenido = libro.ContenidoAnime; // Ajustar según el tipo de contenido que estás manejando
+
+        document.addEventListener('DOMContentLoaded', function () {
+            establecerTituloPelicula(valor);
+            mostrarVideo(idArchivo);
+        });
+
+        function establecerTituloPelicula(valor) {
+            const titulos = {
+                1: "ANIME",
+                5: "PELICULA",
+            };
+            document.title = titulos[valor] || document.title;
+        }
+
+        function obtenerParametroConsulta(nombre) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(nombre);
+        }
+
+        function generarEnlaceDrive(idArchivo) {
+            return 'https://drive.google.com/file/d/' + idArchivo + '/preview';
+        }
+
+        function mostrarVideo(idArchivo) {
+            var videoViewer = document.getElementById('video-viewer');
+            videoViewer.src = generarEnlaceDrive(idArchivo);
+            window.history.pushState({}, '', `?idArchivo=${idArchivo}&valor=${valor}`);
+        }
+
+        function iniciarTransmisionChromecast() {
+            var videoUrl = document.getElementById('video-viewer').src;
+            var mediaInfo = new chrome.cast.media.MediaInfo(videoUrl);
+            var request = new chrome.cast.media.LoadRequest(mediaInfo);
+
+            chrome.cast.requestSession(function(session) {
+                session.loadMedia(request,
+                    function() {
+                        console.log('Transmisión iniciada con éxito');
+                    },
+                    onError);
+            }, onError);
+        }
+
+        function onError() {
+            console.log('Error al iniciar la transmisión con Chromecast');
+        }
+    </script>
+</body>
+</html>
